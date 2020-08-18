@@ -2,14 +2,14 @@
   <div class="list row">
     <div class="col-md-8">
       <div class="input-group mb-3">
-        <input type="text" class="form-control" placeholder="Search by title"
+        <el-input type="text" placeholder="Search by title"
           v-model="title"/>
         <div class="input-group-append">
-          <button class="btn btn-outline-secondary" type="button"
+          <el-button type="button"
             @click="searchTitle"
           >
             Search
-          </button>
+          </el-button>
         </div>
       </div>
     </div>
@@ -55,6 +55,7 @@
       </div>
     </div>
   </div>
+
 </template>
 
 <script>
