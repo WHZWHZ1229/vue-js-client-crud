@@ -8,8 +8,18 @@ export default new Router({
   routes: [
     {
       path: "/",
-      name: "applyLeave",
-      component: () => import("./components/ApplyLeave")
+      name: "LeaveInfoMain",
+      component: () => import("./components/LeaveIntro")
+    },
+    {
+      path: "/enquiry-leave",
+      name: "LeaveInfo",
+      component: () => import("./components/LeaveIntro")
+    },
+    {
+      path: "/modify-leave",
+      name: "modifyLeave",
+      component: () => import("./components/ModifyLeave")
     },
     // {
     //   path: "/tutorials/:id",
@@ -34,6 +44,16 @@ export default new Router({
       path: "/apply-leave",
       name: "applyLeave",
       component: () => import("./components/ApplyLeave")
+    },
+    {
+      path: "/delete-leave",
+      name: "deleteLeave",
+      component: () => import("./components/CancelLeave")
+    },
+    {
+      path: "/approve-leave",
+      name: "approveLeave",
+      component: () => import("./components/ApproveLeave")
     },
   ]
 });

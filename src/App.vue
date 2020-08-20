@@ -11,11 +11,11 @@
           background-color="#0A3282"
           text-color="#fff"
           active-text-color="#fff">
+        <el-menu-item index="5">Leave Information Enquiry</el-menu-item>
         <el-menu-item index="1">Apply Leave</el-menu-item>
         <el-menu-item index="2">Modify Application</el-menu-item>
         <el-menu-item index="3">Cancel Application</el-menu-item>
         <el-menu-item index="4">Leave Approval</el-menu-item>
-        <el-menu-item index="5">Leave Information Enquiry</el-menu-item>
         <el-menu-item index="6" @click="logout">Logout</el-menu-item>
       </el-menu>
 
@@ -36,10 +36,23 @@ export default {
     return {
       component:'',
       activeIndex:'1',
+      currentPath:''
     };
   },
-  beforeCreate() {
-  },
+  // beforeCreate() {
+  //   const pathIndex = {"/":'1',"/apply-leave":'1',"modify-leave":'2',"/delete-leave":'3',"/approve-leave":'4',"/enquiry-leave":'5'}
+  //   console.log("current route")
+  //   console.log(this.$router.currentRoute)
+  //   this.activeIndex = pathIndex[this.$router.currentRoute.path]
+  //   console.log(this.activeIndex)
+  // },
+  // created() {
+  //   const pathIndex = {"/":'1',"/apply-leave":'1',"modify-leave":'2',"/delete-leave":'3',"/approve-leave":'4',"/enquiry-leave":'5'}
+  //   this.activeIndex = pathIndex[window.location.href.split('/')[-1]]
+  //   console.log("current url")
+  //   console.log(window.location.href.split('/')[-1])
+  //   console.log(this.activeIndex)
+  // },
   methods: {
     logout(){
       TutorialDataService.logout()
@@ -56,23 +69,15 @@ export default {
     handleSelect(key, keyPath) {
       if(key === "1"){
         this.$router.push('/apply-leave')
-        console.log(key);
-        console.log(keyPath)
       }
       else if(key === "2"){
-        this.$router.push('/add-leave')
-        console.log(key);
-        console.log(keyPath)
+        this.$router.push('/modify-leave')
       }
       else if(key === "3"){
         this.$router.push('/delete-leave')
-        console.log(key);
-        console.log(keyPath)
       }
       else if(key === "4"){
         this.$router.push('/approve-leave')
-        console.log(key);
-        console.log(keyPath)
       }
       else if(key === "5"){
         this.$router.push('/enquiry-leave')
@@ -84,6 +89,9 @@ export default {
   mounted() {
     console.log("userInfo")
     console.log(this.$root.userInfo)
+    const pathIndex = {"/":'5',"/apply-leave":'1',"/modify-leave":'2',"/delete-leave":'3',"/approve-leave":'4',"/enquiry-leave":'5'}
+    console.log('/'+String(window.location.href).split('/').pop())
+    this.activeIndex = pathIndex['/'+String(window.location.href).split('/').pop()]
   },
 };
 </script>

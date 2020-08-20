@@ -2,68 +2,81 @@
   <div class="leave-div">
     <div class="column">
       <transition name="el-zoom-in-top">
-      <div v-show="showTable"  class="div-center transition-box">
-        <el-card class="box-card" shadow="always">
-          <p>Leave History</p>
-          <p>Leave Days Remain: {{remainDayOfHistory}}</p>
-          <el-table
-              :data="tableData"
-              style="width: 100%"
-              height="400">
-            <el-table-column
-                fixed
-                prop="startAt"
-                label="Start At"
-                width="120">
-            </el-table-column>
-            <el-table-column
-                fixed
-                prop="endAt"
-                label="End At"
-                width="120">
-            </el-table-column>
-            <el-table-column
-                prop="leaveType"
-                label="Leave Type"
-                width="120">
-            </el-table-column>
-            <el-table-column
-                prop="days"
-                label="Days of leaving"
-                width="130">
-            </el-table-column>
-            <el-table-column
-                prop="supervisor"
-                label="Supervisor"
-                width="180">
-            </el-table-column>
-            <el-table-column
-                prop="processed"
-                label="Processed"
-                width="120">
-            </el-table-column>
-            <el-table-column
-                label="Justification"
-                width="120">
-              <template slot-scope="scope">
-                <el-button
-                    @click="showDetail(scope.$index, tableData)"
-                    type="text"
-                    style="color:#0A3282"
-                    size="small">
-                  Detail
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-card>
-      </div>
+        <div v-show="showTable"  class="div-center transition-box">
+          <el-card class="box-card" shadow="always">
+            <p>Processing Leaves</p>
+            <el-table
+                highlight-current-row
+                :data="tableData"
+                style="width: 100%"
+                height="400">
+              <el-table-column
+                  fixed
+                  label="Operation"
+                  width="120">
+                <template slot-scope="scope">
+                  <el-button
+                      @click="showOperation(scope.$index, tableData)"
+                      type="text"
+                      style="color:#0A3282"
+                      size="small">
+                    Modify
+                  </el-button>
+                </template>
+              </el-table-column>
+              <el-table-column
+                  prop="startAt"
+                  label="Start At"
+                  width="120">
+              </el-table-column>
+              <el-table-column
+                  prop="endAt"
+                  label="End At"
+                  width="120">
+              </el-table-column>
+              <el-table-column
+                  prop="leaveType"
+                  label="Leave Type"
+                  width="120">
+              </el-table-column>
+              <el-table-column
+                  prop="days"
+                  label="Days of leaving"
+                  width="130">
+              </el-table-column>
+              <el-table-column
+                  prop="supervisor"
+                  label="Supervisor"
+                  width="180">
+              </el-table-column>
+              <el-table-column
+                  prop="processed"
+                  label="Processed"
+                  width="120">
+              </el-table-column>
+              <el-table-column
+                  label="Justification"
+                  width="120">
+                <template slot-scope="scope">
+                  <el-button
+                      @click="showDetail(scope.$index, tableData)"
+                      type="text"
+                      style="color:#0A3282"
+                      size="small">
+                    Detail
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </el-card>
+        </div>
       </transition>
     </div>
     <div class="column">
-      <div class="div-center">
+      <transition name="el-zoom-in-top">
+      <div v-show="operationFlag"  class="div-center transition-box">
         <el-card class="box-card" shadow="always">
-          <p>Leave Application</p>
+          <p>Leave Modification</p>
           <br/>
           <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="150px" class="demo-ruleForm">
             <el-form-item label="Leave Type" prop="leaveType">
@@ -78,8 +91,7 @@
                   v-model="ruleForm.dateValue"
                   type="daterange"
                   start-placeholder="Start date"
-                  end-placeholder="End date"
-                  :default-time="['00:00:00','00:00:00']">
+                  end-placeholder="End date">
               </el-date-picker>
             </el-form-item>
             <el-form-item label="Days of leaving" prop="daysOfLeave">
@@ -93,11 +105,12 @@
             </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="submitForm('ruleForm')" :disabled="submitted">Confirm</el-button>
-              <el-button @click="resetForm('ruleForm')">Reset</el-button>
+              <el-button @click="resetForm('ruleForm')">Cancel</el-button>
             </el-form-item>
           </el-form>
         </el-card>
       </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -106,7 +119,7 @@
 import TutorialDataService from "../services/TutorialDataService";
 
 export default {
-  name: "ApplyLeave",
+  name: "ModifyLeave",
   data() {
     return {
       showTable:false,
@@ -114,9 +127,11 @@ export default {
         leaveType: '',
         dateValue: [],
         daysOfLeave: '',
-        delivery: false,
         desc: '',
-        approvalEmail: ''
+        approvalEmail: '',
+        prevDays:0,
+        leaveId:0,
+        leavePosition:-1,
       },
       rules: {
         approvalEmail: [
@@ -135,27 +150,18 @@ export default {
         ]
       },
       submitted: false,
-      tableData: [],
-      remainDayOfHistory: '0',
+      operationFlag:false,
+      tableData: []
     };
   },
   beforeCreate() {
-    TutorialDataService.getLeave(this.$root.userInfo)
+    TutorialDataService.getProcessingLeave(this.$root.userInfo)
         .then(response => {
-          TutorialDataService.getRemainDays(this.$root.userInfo)
-              .then(userResponse => {
-                if (response.data.ret_code === 0 && userResponse.data.ret_code===0) {
-                  console.log(response.data);
-                  console.log(userResponse.data);
-                  if (response.data.ret_code === 0) {
-                    this.tableData = this.leaveInfoDataFormatter(response.data.ret_msg)
-                    this.showTable = true
-                  }
-                  this.remainDayOfHistory = String(userResponse.data.ret_msg.remainDays)
-                }
-              }).catch(e => {
-            console.log(e);
-          });
+          console.log(response.data);
+          if (response.data.ret_code === 0) {
+            this.tableData = this.leaveInfoDataFormatter(response.data.ret_msg)
+            this.showTable = true
+          }
         }).catch(e => {
       console.log(e);
     });
@@ -166,6 +172,23 @@ export default {
     },
     showDetail(index, tableData) {
       this.$alert(tableData[index].description, 'Justification')
+    },
+    showOperation(index, tableData) {
+      if(this.operationFlag){
+        this.operationFlag = false
+        console.log(index,tableData)
+      }
+      this.ruleForm.leaveType = tableData[index].leaveType
+      this.ruleForm.daysOfLeave = tableData[index].days
+      this.ruleForm.desc = tableData[index].description
+      this.ruleForm.approvalEmail = tableData[index].supervisor
+      this.ruleForm.dateValue = [tableData[index].startAt,tableData[index].endAt]
+      this.ruleForm.prevDays = tableData[index].days
+      this.ruleForm.leaveId = tableData[index].id
+      this.ruleForm.leavePosition = index
+      console.log(typeof(tableData[index].startAt))
+      console.log(tableData[index].id)
+      setTimeout(() => {  this.operationFlag = true }, 100);
     },
     leaveInfoDataFormatter(data) {
       for (let i = 0; i < data.length; i++) {
@@ -187,23 +210,28 @@ export default {
       console.log(this.ruleForm)
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          TutorialDataService.createLeave(this.ruleForm).then(response => {
+          TutorialDataService.modifyLeave(this.ruleForm).then(response => {
             console.log(response.data);
             this.submitted = false;
             this.$alert(response.data.ret_msg)
             if(response.data.ret_code ===0){
-            const LeaveInfoDetail = {
-              leaveType: this.ruleForm.leaveType,
-              startAt: this.dateFormatter(this.ruleForm.dateValue[0]),
-              endAt: this.dateFormatter(this.ruleForm.dateValue[1]),
-              description: this.ruleForm.desc,
-              processed: 'false',
-              days: this.ruleForm.daysOfLeave,
-              supervisor: this.ruleForm.approvalEmail,
-              applier: this.ruleForm.applier,
-            }
-            this.tableData.unshift(LeaveInfoDetail)
-            this.$refs[formName].resetFields();
+              const LeaveInfoDetail = {
+                leaveType: this.ruleForm.leaveType,
+                startAt: this.ruleForm.dateValue[0],
+                endAt: this.ruleForm.dateValue[1],
+                description: this.ruleForm.desc,
+                processed: 'false',
+                days: this.ruleForm.daysOfLeave,
+                supervisor: this.ruleForm.approvalEmail,
+                applier: this.ruleForm.applier,
+                id:this.ruleForm.leaveId,
+              }
+              if (this.ruleForm.leavePosition > -1) {
+                this.tableData.splice(this.ruleForm.leavePosition, 1);
+              }
+              this.tableData.unshift(LeaveInfoDetail)
+              this.$refs[formName].resetFields();
+              this.operationFlag = false
             }
           })
               .catch(e => {
@@ -218,6 +246,7 @@ export default {
     },
     resetForm(formName) {
       this.$refs[formName].resetFields();
+      this.operationFlag = false
     }
   }
 }

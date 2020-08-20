@@ -58,7 +58,8 @@ export default {
               .then(response => {
             console.log(response.data);
             if(response.data.ret_code === 0) {
-              this.$router.push('/apply-leave')
+              this.$parent.activeIndex = '5'
+              this.$router.push('/')
               this.$root.userInfo = user.username
             }
             else{
